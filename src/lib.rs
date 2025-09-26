@@ -39,12 +39,12 @@ impl<
         {
             this.in_.push(item);
         }
+        if !this.in_.is_empty() && this.fut.is_none() {
+            this.fut.set(Some((this.f)(std::mem::take(this.in_))));
+        }
         if let Some(fut) = this.fut.as_mut().as_pin_mut() {
             this.out.extend(ready!(fut.try_poll(cx))?);
             this.fut.set(None);
-        }
-        if !this.in_.is_empty() {
-            this.fut.set(Some((this.f)(std::mem::take(this.in_))));
         }
         if let Some(item) = this.out.pop_front() {
             Poll::Ready(Some(Ok(item)))
