@@ -87,3 +87,14 @@ pub fn batch_map<T, U, E, Fut: TryFuture<Ok: IntoIterator<Item = U>, Error = E>>
         out: Default::default(),
     }
 }
+
+pub trait BatchMapExt: Sized + FusedStream + TryStream {
+    fn batch_map<U, Fut: TryFuture<Ok: IntoIterator<Item = U>, Error = Self::Error>>(
+        self,
+        f: impl FnMut(Vec<Self::Ok>) -> Fut,
+    ) -> impl FusedStream<Item = Result<U, Self::Error>> {
+        batch_map(self, f)
+    }
+}
+
+impl<T: Sized + FusedStream + TryStream> BatchMapExt for T {}
